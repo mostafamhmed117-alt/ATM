@@ -117,10 +117,10 @@ void UpdateClientBalance(vector<stClient>& vClient, short Amount, enTransaction 
 	}
 }
 
-void SaveClientUpdate(string FileName, vector<stClient> &vClients)
+void SaveClientUpdate(string FileName, vector<stClient>& vClients)
 {
 	fstream MyFile;
-	MyFile.open(FileName, ios::out | ios::app);
+	MyFile.open(FileName, ios::out);
 	if (MyFile.is_open())
 	{
 		for (stClient& C : vClients)
@@ -131,12 +131,11 @@ void SaveClientUpdate(string FileName, vector<stClient> &vClients)
 	}
 }
 
-void PerformTansaction(short Amount, enTransaction Operation)
+void PerformTansaction(short Amount , vector<stClient>&vClients , enTransaction Operation)
 {
-	vector<stClient> vClients = LoadClientDateFromFile(ClientsFileName);
-	char Answer = 'n';
 	if (CurrentClient.AccountBalance >= Amount || Operation == enTransaction::eDeposit)
 	{
+		char Answer = 'n';
 		cout << "\nAre you sure you want to perform this transaction? y/n ? ";
 		cin >> Answer;
 		if (Answer == 'y' || Answer == 'Y')
@@ -175,16 +174,25 @@ short GetWithdrawAmount(short Choice)
 	}
 }
 
-void QuickWithdraw()
+short ReadQuickWithdrawOption()
 {
-	vector<stClient> vClients = LoadClientDateFromFile(ClientsFileName);
 	short Choice = 0;
-	cout << "Your Balance is " << CurrentClient.AccountBalance << endl;
 	cout << "Choose what to withdaw from[1] to [8] ? ";
 	cin >> Choice;
+	while (Choice < 1 || Choice > 9)
+	{
+		cout << "Choose what to withdaw from[1] to [8] ? ";
+		cin >> Choice;
+	}
+	return Choice;
+}
+
+void QuickWithdraw(short Choice)
+{
 	if (Choice == 9)
 		return;
-	PerformTansaction(GetWithdrawAmount(Choice), enTransaction::eWithdraw);
+	vector<stClient> vClients = LoadClientDateFromFile(ClientsFileName);
+	PerformTansaction(GetWithdrawAmount(Choice), vClients , enTransaction::eWithdraw);
 }
 
 void ShowQucikWithdrawScreen()
@@ -199,7 +207,8 @@ void ShowQucikWithdrawScreen()
 	cout << "\t" << left << setw(15) << "[7] 800" << left << setw(10) << "[8] 1000\n";
 	cout << "\t" << left << setw(15) << "[9] Exit";
 	cout << "\n=========================================\n";
-	QuickWithdraw();
+	cout << "Your Balance is " << CurrentClient.AccountBalance << endl;
+	QuickWithdraw(ReadQuickWithdrawOption());
 }
 
 void NormalWithdraw()
@@ -211,7 +220,8 @@ void NormalWithdraw()
 		cin >> Amount;
 	} while (Amount % 5 != 0);
 
-	PerformTansaction(Amount, enTransaction::eWithdraw);
+	vector<stClient>vClients = LoadClientDateFromFile(ClientsFileName);
+	PerformTansaction(Amount, vClients ,enTransaction::eWithdraw);
 }
 
 void ShowNormalWithdrawScreen()
@@ -233,7 +243,8 @@ void Deposit()
 		cout << "\nEnter a positive Deposit Amount? ";
 		cin >> Amount;
 	}
-	PerformTansaction(Amount, enTransaction::eDeposit);
+	vector<stClient>vClients = LoadClientDateFromFile(ClientsFileName);
+	PerformTansaction(Amount, vClients, enTransaction::eDeposit);
 }
 
 void ShowDepositScreen()
